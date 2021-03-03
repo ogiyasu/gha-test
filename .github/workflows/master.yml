@@ -37,8 +37,8 @@ jobs:
         username: ${{ secrets.FTPUSERNAME }}
         password: ${{ secrets.FTPPASSWORD }}
         port: 21
-        local-dir: "dist/*"
-        server-dir: "/home/users/1/lolipop.jp-3554e2428fdb7ab8/web/gha"
+        local-dir: "dist/"
+        server-dir: "/home/users/1/lolipop.jp-3554e2428fdb7ab8/web/gha/"
 
     # 成功時
     - name: Slack Notification on Success
