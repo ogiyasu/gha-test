@@ -1,0 +1,59 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Development Deployment with Yarn
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+    - name : Get Latest Code
+    - uses: actions/checkout@v2
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: yarn install, build
+      run: |
+        yarn install
+        yarn generate
+    
+    - name: Upload file FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.0.0
+      with:
+        server: ${{ secrets.FTPHOST }}
+        username: ${{ secrets.FTPUSERNAME }}
+        password: ${{ secrets.FTPPASSWORD }}
+        port: 21
+        local-dir: "dist/*"
+        server-dir: "/home/users/1/lolipop.jp-3554e2428fdb7ab8/web/gha"
+
+    # 成功時
+    - name: Slack Notification on Success
+      if: success()
+      uses: rtCamp/action-slack-notify@v2.0.2
+      env:
+        SLACK_CHANNEL: slack開発用チャンネル
+        SLACK_TITLE: DEPLOY
+        SLACK_COLOR: good
+
+    # 失敗
+    - name: Slack Notification on Failure
+      uses: rtCamp/action-slack-notify@v2.0.2
+      if: failure()
+      env:
+        SLACK_CHANNEL: slack開発用チャンネル
+        SLACK_TITLE: DEPLOY
+        SLACK_COLOR: danger
