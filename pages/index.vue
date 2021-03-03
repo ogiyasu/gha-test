@@ -3,7 +3,7 @@
     <div>
       <Logo />
       <p class="title">
-        Let's try Github Actions!
+        Let's try Github Actions! Welcome To Konel!
       </p>
     </div>
   </div>
