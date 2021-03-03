@@ -1,35 +1,45 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
+# Action名
 name: Development Deployment with Yarn
 
+# masterにpushがあったら
 on:
   push:
     branches: [ master ]
 
+# 環境変数定義できるよ
 env:
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
 jobs:
   build:
+    # 環境指定する（linux）
     runs-on: ubuntu-latest
+    # node veresion指定
     strategy:
       matrix:
         node-version: [14.x]
+
     steps:
+    # checkout
     - name : Get Latest Code
       uses: actions/checkout@v2
     
+    # nodeをset up 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
 
+    # ビルドする
     - name: yarn install, build
       run: |
         yarn install
         yarn generate
     
+    # FTPでアップロード
     - name: Upload file FTP
       uses: SamKirkland/FTP-Deploy-Action@4.0.0
       with:
@@ -40,7 +50,7 @@ jobs:
         local-dir: "dist/"
         server-dir: "gha/"
 
-    # 成功時
+    # slack通知:成功時
     - name: Slack Notification on Success
       if: success()
       uses: rtCamp/action-slack-notify@v2.0.2
@@ -49,7 +59,7 @@ jobs:
         SLACK_TITLE: DEPLOY
         SLACK_COLOR: good
 
-    # 失敗
+    # slack通知:失敗時
     - name: Slack Notification on Failure
       uses: rtCamp/action-slack-notify@v2.0.2
       if: failure()
